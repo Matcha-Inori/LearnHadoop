@@ -20,7 +20,7 @@ public class OrderIntTestReducer extends Reducer<IntWritable, IntWritable, IntWr
         Iterator<IntWritable> valueIter = values.iterator();
         while(valueIter.hasNext())
         {
-            max = Math.min(max, valueIter.next().get());
+            max = Math.max(max, valueIter.next().get());
         }
         context.write(key, new IntWritable(max));
     }
