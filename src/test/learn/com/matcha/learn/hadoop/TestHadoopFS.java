@@ -1,6 +1,5 @@
-package com.matcha.learn.test;
+package com.matcha.learn.hadoop;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -8,8 +7,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -19,8 +17,10 @@ import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Created by Matcha on 2016/11/9.
@@ -28,9 +28,16 @@ import java.nio.channels.*;
 @RunWith(Parameterized.class)
 public class TestHadoopFS
 {
+    private String fsURI;
     private FileSystem fileSystem;
 
     public TestHadoopFS(String fsURI)
+    {
+        this.fsURI = fsURI;
+    }
+
+    @Before
+    public void setUp() throws Exception
     {
         try
         {
@@ -43,6 +50,13 @@ public class TestHadoopFS
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    @After
+    public void tearDown() throws Exception
+    {
+        if(fileSystem != null)
+            fileSystem.close();
     }
 
     @Test
