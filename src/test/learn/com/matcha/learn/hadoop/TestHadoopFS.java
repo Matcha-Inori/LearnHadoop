@@ -7,7 +7,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.junit.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -28,6 +33,8 @@ import java.nio.channels.WritableByteChannel;
 @RunWith(Parameterized.class)
 public class TestHadoopFS
 {
+    private Logger logger = Logger.getLogger(TestHadoopFS.class);
+
     private String fsURI;
     private FileSystem fileSystem;
 
@@ -43,7 +50,9 @@ public class TestHadoopFS
         {
             URI uri = URI.create(fsURI);
             Configuration configuration = new Configuration();
-            fileSystem = FileSystem.get(uri, configuration);
+            fileSystem = FileSystem.get(uri, configuration, "matcha");
+            DOMConfigurator.configure("properties/log4jConfig.xml");
+            logger.info("TestHadoopFS test start!");
         }
         catch (IOException e)
         {
@@ -57,12 +66,13 @@ public class TestHadoopFS
     {
         if(fileSystem != null)
             fileSystem.close();
+        logger.info("TestHadoopFS test finish!");
     }
 
     @Test
     public void testLoadFile() throws IOException, URISyntaxException
     {
-        Path newFilePath = new Path("/matcha/test/fistFile.txt");
+        Path newFilePath = new Path("/matcha/test/firstFile.txt");
         URI firstLocalFileURI = new File("").toURI().resolve("src/main/resources/output/firstLocalFile.txt");
         try(
                 FSDataInputStream fsDataInputStream = fileSystem.open(newFilePath);
@@ -84,8 +94,8 @@ public class TestHadoopFS
     @Test
     public void testCreateFile() throws IOException, URISyntaxException
     {
-        //这个地方的链接其实涉及到hdfs的登录，不过先暂时关闭hdfs的权限认证吧
-        Path newFilePath = new Path("/matcha/test/fistFile.txt");
+        //这个地方的权链接其实涉及到hdfs的登录，不过先暂时关闭hdfs的限认证吧
+        Path newFilePath = new Path("/matcha/test/firstFile.txt");
         FsPermission fsPermission = new FsPermission(FsAction.ALL, FsAction.READ, FsAction.READ);
         URL localFileURL = Thread.currentThread().getContextClassLoader().getResource("data/testFile.txt");
         try(
@@ -115,7 +125,7 @@ public class TestHadoopFS
     {
         return new Object[][]{
                 {
-                        "hdfs://192.168.56.101:9000/"
+                        "hdfs://centos01:9000/"
                 }
         };
     }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="hadoopAppend" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="log/hadoop.log"></param>
+        <param name="ImmediateFlush" value="true"></param>
+        <param name="Threshold" value="info"></param>
+        <param name="Append" value="true"></param>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss\} %-5p] [%t] {%c:%L}-%m%n"></param>
+        </layout>
+    </appender>
+
+    <appender name="testAppend" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="log/testHadoop.log"></param>
+        <param name="ImmediateFlush" value="true"></param>
+        <param name="Threshold" value="info"></param>
+        <param name="Append" value="true"></param>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss\} %-5p] [%t] {%c:%L}-%m%n"></param>
+        </layout>
+    </appender>
+
+    <logger name="com.matcha.learn" additivity="false">
+        <appender-ref ref="hadoopAppend"></appender-ref>
+    </logger>
+
+    <logger name="com.matcha.test" additivity="false">
+        <appender-ref ref="testAppend"></appender-ref>
+    </logger>
+
+    <root>
+        <priority value="debug"></priority>
+        <appender-ref ref="hadoopAppend"></appender-ref>
+    </root>
+</log4j:configuration>

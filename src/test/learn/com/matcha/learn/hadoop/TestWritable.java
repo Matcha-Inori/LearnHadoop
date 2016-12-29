@@ -1,5 +1,6 @@
 package com.matcha.learn.hadoop;
 
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.hamcrest.core.Is;
 import org.junit.Assert;
@@ -108,5 +109,12 @@ public class TestWritable
         for(int i = 0;i < str.length();i++)
             System.out.println((char) str.codePointAt(i) + " " + str.codePointAt(i));
         System.out.println("==================");
+    }
+
+    @Test
+    public void testObject()
+    {
+        ObjectWritable objectWritable = new ObjectWritable();
+
     }
 }
