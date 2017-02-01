@@ -3,6 +3,7 @@ package com.matcha.test.mobile.writable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableComparator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -17,6 +18,21 @@ public class MobileCountWritable implements WritableComparable<MobileCountWritab
     private LongWritable upPayLoad;
     private LongWritable downPayLoad;
     private LongWritable totalPayLoad;
+
+    public MobileCountWritable()
+    {
+        this(null, 0, 0);
+    }
+
+    public MobileCountWritable(String mobileNumber)
+    {
+        this(mobileNumber, 0, 0);
+    }
+
+    public MobileCountWritable(Text mobileNumber)
+    {
+        this(mobileNumber.toString(), 0, 0);
+    }
 
     public MobileCountWritable(MobileCountWritable otherMobileCount)
     {
@@ -38,25 +54,36 @@ public class MobileCountWritable implements WritableComparable<MobileCountWritab
                                long upPayLoad,
                                long downPayLoad)
     {
-        this.mobileNumber = new Text(mobileNumber);
+        this.mobileNumber = mobileNumber == null ? new Text() : new Text(mobileNumber);
         this.upPayLoad = new LongWritable(upPayLoad);
         this.downPayLoad = new LongWritable(downPayLoad);
         this.totalPayLoad = new LongWritable(upPayLoad + downPayLoad);
     }
 
+    public void add(MobileCountWritable other)
+    {
+        this.upPayLoad.set(this.upPayLoad.get() + other.upPayLoad.get());
+        this.downPayLoad.set(this.downPayLoad.get() + other.downPayLoad.get());
+        this.totalPayLoad.set(this.totalPayLoad.get() + other.totalPayLoad.get());
+    }
+
+    public void set(Text mobileNumber, long upPayLoad, long downPayLoad)
+    {
+        this.mobileNumber.set(mobileNumber.toString());
+        this.upPayLoad.set(upPayLoad);
+        this.downPayLoad.set(downPayLoad);
+        this.totalPayLoad.set(upPayLoad + downPayLoad);
+    }
+
+    public void reCompute()
+    {
+        this.totalPayLoad.set(this.upPayLoad.get() + this.downPayLoad.get());
+    }
+
     @Override
     public int compareTo(MobileCountWritable other)
     {
-        int result;
-        if((result = this.totalPayLoad.compareTo(other.totalPayLoad)) != 0)
-            return result;
-        if((result = this.downPayLoad.compareTo(other.downPayLoad)) != 0)
-            return result;
-        if((result = this.upPayLoad.compareTo(other.upPayLoad)) != 0)
-            return result;
-
-
-        return 0;
+        return this.mobileNumber.compareTo(other.mobileNumber);
     }
 
     @Override
@@ -77,6 +104,16 @@ public class MobileCountWritable implements WritableComparable<MobileCountWritab
         this.totalPayLoad.readFields(in);
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append(this.upPayLoad).append("\t")
+                .append(this.downPayLoad).append("\t")
+                .append(this.totalPayLoad);
+        return stringBuffer.toString();
+    }
+
     public String getMobileNumber()
     {
         return mobileNumber.toString();
@@ -95,6 +132,7 @@ public class MobileCountWritable implements WritableComparable<MobileCountWritab
     public void setUpPayLoad(long upPayLoad)
     {
         this.upPayLoad.set(upPayLoad);
+        reCompute();
     }
 
     public long getDownPayLoad()
@@ -105,5 +143,27 @@ public class MobileCountWritable implements WritableComparable<MobileCountWritab
     public void setDownPayLoad(long downPayLoad)
     {
         this.downPayLoad.set(downPayLoad);
+        reCompute();
+    }
+
+    public long getTotalPayLoad()
+    {
+        return totalPayLoad.get();
+    }
+
+    public static class MobileCountWritableComparator extends WritableComparator
+    {
+        @Override
+        public int compare(byte[] b1, int s1, int l1,
+                           byte[] b2, int s2, int l2)
+        {
+            WritableComparator textWritableComparator = WritableComparator.get(Text.class);
+            return textWritableComparator.compare(b1, s1, l1, b2, s2, l2);
+        }
+    }
+
+    static
+    {
+        WritableComparator.define(MobileCountWritable.class, new MobileCountWritableComparator());
     }
 }
