@@ -112,6 +112,22 @@ public class TestWritable
     }
 
     @Test
+    public void testCodePoint()
+    {
+        System.out.println("=========testCodePoint=========");
+        String str = "\u0041\u00DF\u6771\uD801\uDC00";
+        int strLength = str.length();
+        int codePointCounts = str.codePointCount(0, strLength);
+        int codePointOffset;
+        for(int i = 0;i < codePointCounts;i++)
+        {
+            codePointOffset = str.offsetByCodePoints(0, i);
+            System.out.println((char) str.codePointAt(codePointOffset));
+        }
+        System.out.println("---------testCodePoint---------");
+    }
+
+    @Test
     public void testObject()
     {
         ObjectWritable objectWritable = new ObjectWritable();
