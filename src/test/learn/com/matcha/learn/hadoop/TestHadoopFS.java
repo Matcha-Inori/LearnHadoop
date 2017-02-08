@@ -22,10 +22,13 @@ import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
  * Created by Matcha on 2016/11/9.
@@ -117,6 +120,63 @@ public class TestHadoopFS
         {
             e.printStackTrace();
             throw e;
+        }
+    }
+
+    @Test
+    public void testUGI() throws Exception
+    {
+        if(fileSystem != null)
+            fileSystem.close();
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL testConfigURL = classLoader.getResource("testConfig.xml");
+        Configuration configuration = new Configuration();
+        configuration.addResource(testConfigURL);
+        Path testFilePath = new Path("/usr/abc.txt");
+        try(
+                FileSystem fileSystem = FileSystem.get(URI.create(fsURI), configuration);
+                FSDataOutputStream outputStream = fileSystem.create(testFilePath)
+        )
+        {
+            outputStream.writeChars("abc.txt\n");
+            outputStream.writeChars("abc.txt\n");
+            outputStream.writeChars("abc.txt");
+            outputStream.hsync();
+            FsPermission fsPermission = new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE);
+            fileSystem.setPermission(testFilePath, fsPermission);
+        }
+
+        URL otherTestConfigURL = classLoader.getResource("otherTestConfig.xml");
+        configuration.addResource(otherTestConfigURL);
+        try(
+                FileSystem fileSystem = FileSystem.get(URI.create(this.fsURI), configuration);
+                FSDataInputStream inputStream = fileSystem.open(testFilePath);
+                ReadableByteChannel channel = Channels.newChannel(inputStream)
+        )
+        {
+            char[] result = new char[0];
+            char[] chars = null;
+            int remaining;
+            int index;
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+            CharBuffer charBuffer;
+            while(channel.read(byteBuffer) >= 0)
+            {
+                byteBuffer.flip();
+                if(!byteBuffer.hasRemaining())
+                    continue;
+                charBuffer = byteBuffer.asCharBuffer();
+                remaining = charBuffer.remaining();
+                if(chars == null || chars.length < remaining)
+                    chars = new char[remaining];
+                charBuffer.get(chars);
+                index = result.length;
+                result = Arrays.copyOf(result, index + remaining);
+                System.arraycopy(chars, 0, result, index, remaining);
+                byteBuffer.clear();
+            }
+            String resultStr = new String(result);
+            System.out.println(resultStr);
         }
     }
 
