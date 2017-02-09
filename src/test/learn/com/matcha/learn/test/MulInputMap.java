@@ -9,6 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -38,7 +39,7 @@ public class MulInputMap extends Configured implements Tool
 
         job.setMapperClass(MulInputMapper.class);
         for(URI inputURI : inputURIs)
-            MultipleInputs.addInputPath(job, new Path(inputURI), FileInputFormat.class);
+            MultipleInputs.addInputPath(job, new Path(inputURI), TextInputFormat.class);
 
         job.setReducerClass(MulInputReducer.class);
         job.setOutputKeyClass(Text.class);
